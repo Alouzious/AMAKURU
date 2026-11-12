@@ -1,0 +1,11 @@
+---
+description: TypeScript / Next.js standards for Amakuru admin
+globs: apps/admin/**/*.{ts,tsx}
+---
+
+# TypeScript standards
+
+- Strict mode; no `any` without a documented reason
+- User-visible strings come from message catalogues, never hard-coded
+- Prefer TanStack Query for server state
+- Generate API types from OpenAPI; do not hand-write the client contract

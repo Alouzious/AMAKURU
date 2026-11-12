@@ -1,0 +1,11 @@
+---
+description: Testing and evaluation standards
+globs: "{apps/api/tests/**/*.py,eval/**/*}"
+---
+
+# Testing standards
+
+- Isolation suite must attempt cross-tenant reads/writes and find nothing
+- Pipeline, governance, and isolation get high coverage
+- Never fabricate eval numbers; every figure comes from a runnable command
+- Do not weaken thresholds or skip security tests to make CI pass

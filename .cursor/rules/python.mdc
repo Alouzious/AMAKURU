@@ -1,0 +1,13 @@
+---
+description: Python / FastAPI standards for Amakuru API
+globs: apps/api/**/*.py
+---
+
+# Python standards
+
+- Python 3.12, type hints everywhere, Pydantic v2 models for I/O
+- Async SQLAlchemy 2 only; never reach into another module's tables
+- Tenant queries must run inside a transaction that sets `app.tenant_id`
+- No hard-coded secrets; settings come from pydantic-settings
+- Ruff for lint/format; tests live alongside code under `tests/`
+- Never weaken isolation, auth, or number-firewall tests

@@ -1,0 +1,11 @@
+---
+description: SQL and migration standards
+globs: apps/api/alembic/**/*.py
+---
+
+# SQL standards
+
+- Every tenant table has `tenant_id` and Row Level Security
+- App role must not bypass RLS; use `SET LOCAL app.tenant_id`
+- Prefer Alembic migrations; zero-downtime friendly changes
+- Soft delete where the product model requires history

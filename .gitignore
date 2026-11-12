@@ -1,0 +1,48 @@
+# Environment and secrets
+.env
+.env.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Node / Next.js
+node_modules/
+apps/admin/.next/
+apps/admin/out/
+apps/widget/dist/
+packages/api-client/dist/
+*.tsbuildinfo
+
+# Models, storage, local tools, backups
+.models/
+.storage/
+.tools/
+.backups/
+
+# Internal build notes (not for public GitHub)
+docs/PHASE_*.md
+CURSOR_MASTER_PROMPT.md
+env.example
+
+# IDE / OS / Windows download metadata
+.idea/
+.vscode/
+*.swp
+.DS_Store
+*:Zone.Identifier
+*Zone.Identifier
+
+# Docker / logs
+*.log
+docker-data/

@@ -1,0 +1,12 @@
+---
+description: Security and privacy rules
+globs: "**/*.{py,ts,tsx}"
+---
+
+# Security standards
+
+- Approved answers only; never invent facts
+- Encrypt tenant secrets with ENCRYPTION_KEY; never return them from APIs
+- Scrub PII before storage or model calls
+- Verify WhatsApp signatures; block SSRF to private ranges
+- Argon2id for passwords; HTTP-only cookies; CSRF for cookie auth

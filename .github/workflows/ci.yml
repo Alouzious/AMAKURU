@@ -1,0 +1,93 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: amakuru
+          POSTGRES_PASSWORD: change-me
+          POSTGRES_DB: amakuru
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U amakuru"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      APP_NAME: Amakuru
+      APP_ENV: test
+      APP_BASE_URL: http://localhost:3000
+      API_BASE_URL: http://localhost:8000
+      WIDGET_BASE_URL: http://localhost:8000/widget
+      SECRET_KEY: ci-secret-key-not-for-production-use-only-testing-1234567890
+      ENCRYPTION_KEY: dGVzdC1lbmNyeXB0aW9uLWtleS0zMi1ieXRlcysh
+      POSTGRES_USER: amakuru
+      POSTGRES_PASSWORD: change-me
+      POSTGRES_DB: amakuru
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      REDIS_URL: redis://localhost:6379/0
+      BOOTSTRAP_ADMIN_EMAIL: admin@example.com
+      BOOTSTRAP_ADMIN_PASSWORD: ChangeMeNow123!
+      LLM_API_KEY: test-key
+      SEED_DEMO_DATA: "false"
+      REQUIRE_2FA_FOR_APPROVERS: "false"
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Install Python and deps
+        run: |
+          uv python install 3.12
+          uv sync --python 3.12
+      - name: Init DB roles
+        run: |
+          PGPASSWORD=change-me psql -h localhost -U amakuru -d amakuru -f ../../infra/postgres/init.sql
+        working-directory: apps/api
+      - name: Migrate
+        run: uv run --python 3.12 alembic upgrade head
+      - name: Lint
+        run: |
+          uv run --python 3.12 ruff check src tests
+          uv run --python 3.12 ruff format --check src tests
+          uv run --python 3.12 mypy src
+      - name: Test
+        run: uv run --python 3.12 pytest -q
+
+  admin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+      - run: npm ci || npm install
+      - run: npm run lint
+      - run: npx tsc --noEmit

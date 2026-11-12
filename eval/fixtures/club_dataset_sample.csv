@@ -1,0 +1,4 @@
+question_raw,asker_type,language,channel,category,subcategory,frequency,season,official_answer,source_document,owner_office,last_verified,valid_until,escalate_to_human,collector,date_collected
+Where do I find demonstration registration info?,student,en,widget,demo,registration,12,any,"DEMONSTRATION ONLY: Registration guidance is fictional for this sample dataset.",demo-sheet,Registrar,2026-01-01,2026-12-31,false,seed,2026-01-01
+What are fictional demo fees?,parent,en,whatsapp,demo,fees,8,intake,,demo-sheet,Finance,2026-01-01,2026-12-31,false,seed,2026-01-01
+How do I apply in this demo?,applicant,en,widget,demo,admissions,5,any,"DEMONSTRATION ONLY: Application steps shown here are not real.",demo-sheet,Admissions,2026-01-01,2026-12-31,false,seed,2026-01-01

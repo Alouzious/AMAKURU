@@ -1,0 +1,8 @@
+{"question": "What is this demo chatbot for?", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "welcome", "tags": ["paraphrase"]}
+{"question": "whats this demo bot about", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "welcome", "tags": ["typo"]}
+{"question": "Where do I find demonstration registration info?", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "registration", "tags": ["exact"]}
+{"question": "how do i register in the demo", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "registration", "tags": ["paraphrase"]}
+{"question": "How do I apply in this demo?", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "admissions", "tags": ["exact"]}
+{"question": "demo application steps please", "language": "en", "expected_decision": "compose", "expected_entry_key": "admissions", "tags": ["paraphrase"]}
+{"question": "What is the nuclear launch code for the university?", "language": "en", "expected_decision": "handoff", "expected_entry_key": null, "tags": ["oos"]}
+{"question": "hello", "language": "en", "expected_decision": "greeting", "expected_entry_key": null, "tags": ["greeting"]}
