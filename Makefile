@@ -3,16 +3,16 @@ export PATH := $(CURDIR)/.tools/bin:$(PATH)
 export UV_CACHE_DIR := $(CURDIR)/.tools/uv-cache
 export UV_PYTHON_INSTALL_DIR := $(CURDIR)/.tools/python
 UV := $(CURDIR)/.tools/bin/uv
-PYTHON := $(UV) run --directory apps/api --python 3.12
+PYTHON := $(UV) run --directory backend --python 3.12
 ROOT := $(CURDIR)
 
-.PHONY: setup doctor dev test eval lint migrate seed up down widget backup restore restore-drill load-test security-test openapi api-client help
+.PHONY: setup doctor dev frontend test eval lint migrate seed up down widget backup restore restore-drill load-test security-test openapi api-client help
 
 help:
-	@echo "Amakuru targets: setup doctor dev test eval lint migrate seed up down widget backup restore-drill load-test security-test openapi api-client"
+	@echo "Amakuru targets: setup doctor dev frontend test eval lint migrate seed up down widget backup restore-drill load-test security-test openapi api-client"
 
 setup:
-	@test -x $(UV) || (echo "Missing .tools/bin/uv — restore tooling first"; exit 1)
+	@test -x $(UV) || (echo "Missing .tools/bin/uv. Restore tooling first."; exit 1)
 	@$(UV) python install 3.12
 	@if [ ! -f .env ]; then \
 		cp .env.example .env; \
@@ -25,7 +25,7 @@ setup:
 		sed -i "s/^LLM_API_KEY=.*/LLM_API_KEY=not-required-for-phase0/" .env; \
 		echo "Created .env with generated secrets and bootstrap admin@example.com"; \
 	fi
-	@cd apps/api && $(UV) sync --python 3.12
+	@cd backend && $(UV) sync --python 3.12
 	@docker compose up -d postgres redis
 	@echo "Waiting for Postgres..."
 	@for i in $$(seq 1 30); do \
@@ -41,30 +41,33 @@ doctor:
 
 dev:
 	@docker compose up -d postgres redis
-	@cd apps/api && $(UV) run --python 3.12 uvicorn amakuru.main:app --host 0.0.0.0 --port 8000 --reload
+	@cd backend && $(UV) run --python 3.12 uvicorn amakuru.main:app --host 0.0.0.0 --port 8000 --reload
+
+frontend:
+	@cd frontend && npm install && npm run dev
 
 test:
-	@cd apps/api && $(UV) run --python 3.12 pytest -q
+	@cd backend && $(UV) run --python 3.12 pytest -q
 
 eval:
-	@cd apps/api && $(UV) run --python 3.12 python -m amakuru.scripts.eval_cli --tenant demo-university
+	@cd backend && $(UV) run --python 3.12 python -m amakuru.scripts.eval_cli --tenant demo-university
 
 widget:
-	@cd apps/widget && npm install && npm run build
-	@echo "Widget bundle: apps/widget/dist/amakuru-widget.js"
-	@gzip -c apps/widget/dist/amakuru-widget.js | wc -c | awk '{printf "gzip size: %d bytes\n", $$1}'
+	@cd frontend/widget && npm install && npm run build
+	@echo "Widget bundle: frontend/widget/dist/amakuru-widget.js"
+	@gzip -c frontend/widget/dist/amakuru-widget.js | wc -c | awk '{printf "gzip size: %d bytes\n", $$1}'
 
 lint:
-	@cd apps/api && $(UV) run --python 3.12 ruff check src tests
-	@cd apps/api && $(UV) run --python 3.12 ruff format --check src tests
-	@cd apps/api && $(UV) run --python 3.12 mypy src
-	@if [ -d apps/admin/node_modules ]; then cd apps/admin && npm run lint; else echo "Admin deps not installed; skip TS lint"; fi
+	@cd backend && $(UV) run --python 3.12 ruff check src tests
+	@cd backend && $(UV) run --python 3.12 ruff format --check src tests
+	@cd backend && $(UV) run --python 3.12 mypy src
+	@if [ -d frontend/node_modules ]; then cd frontend && npm run build; else echo "Frontend deps not installed; skip build check"; fi
 
 migrate:
-	@cd apps/api && $(UV) run --python 3.12 alembic upgrade head
+	@cd backend && $(UV) run --python 3.12 alembic upgrade head
 
 seed:
-	@cd apps/api && $(UV) run --python 3.12 python -m amakuru.scripts.seed
+	@cd backend && $(UV) run --python 3.12 python -m amakuru.scripts.seed
 
 up:
 	@docker compose up -d postgres redis
@@ -86,13 +89,13 @@ restore-drill:
 	@./infra/backup/restore_drill.sh
 
 load-test:
-	@cd apps/api && $(UV) run --python 3.12 python -m amakuru.scripts.load_test --base http://127.0.0.1:8000 --concurrency 8 --requests 40
+	@cd backend && $(UV) run --python 3.12 python -m amakuru.scripts.load_test --base http://127.0.0.1:8000 --concurrency 8 --requests 40
 
 security-test:
-	@cd apps/api && $(UV) run --python 3.12 pytest -q tests/security tests/isolation
+	@cd backend && $(UV) run --python 3.12 pytest -q tests/security tests/isolation
 
 openapi:
-	@cd apps/api && $(UV) run --python 3.12 python -m amakuru.scripts.export_openapi
+	@cd backend && $(UV) run --python 3.12 python -m amakuru.scripts.export_openapi
 
 api-client: openapi
 	@cd packages/api-client && npm install && npm run generate

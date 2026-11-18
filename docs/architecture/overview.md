@@ -1,6 +1,6 @@
 # Architecture overview
 
-Amakuru is a **modular monolith**: one FastAPI deployable, one worker, one Next.js admin app, one Preact widget bundle.
+Amakuru is a verified FAQ assistant for organizations (universities, companies, sites, and other teams): one FastAPI API, one worker, one Vite React (JSX) admin app, and one Preact (JSX) widget bundle. Configure one organization at a time.
 
 ## System context
 
@@ -10,7 +10,7 @@ Who talks to what in production (or on a single VPS with Docker Compose).
 flowchart LR
   subgraph users [Users]
     S[Student or parent]
-    O[University office staff]
+    O[Organization staff]
     P[Platform admin]
   end
   subgraph edges [Clients]
@@ -42,13 +42,13 @@ flowchart LR
 
 | Piece | Path | Role |
 |-------|------|------|
-| API | `apps/api` | Auth, knowledge, retrieval, generation, channels, billing, analytics |
-| Admin | `apps/admin` | Office workflows and why-this-answer traces |
-| Widget | `apps/widget` | Shadow DOM embed (small gzip bundle) |
+| API | `backend/` | Auth, knowledge, retrieval, generation, channels, billing, analytics |
+| Admin | `frontend/` | Office workflows and why-this-answer traces (Vite React, JSX) |
+| Widget | `frontend/widget/` | Shadow DOM embed (small gzip bundle, Preact JSX) |
 | Data | PostgreSQL 16 with pgvector | Relational data, vectors, FTS, RLS |
 | Cache | Redis 7 | Reply cache, rate limits, background jobs |
 
-**Repo layout:** `apps/api`, `apps/admin`, `apps/widget`, `packages/api-client`, `eval/`, `docs/`, `infra/`.
+**Repo layout:** `backend/`, `frontend/`, `frontend/widget/`, `packages/api-client`, `eval/`, `docs/`, `infra/`.
 
 ## Module boundaries
 
@@ -132,7 +132,7 @@ sequenceDiagram
   API->>DB: COMMIT
 ```
 
-The `amakuru_app` role has `NOBYPASSRLS`. Isolation tests under `apps/api/tests/isolation/` must stay green.
+The `amakuru_app` role has `NOBYPASSRLS`. Isolation tests under `backend/tests/isolation/` must stay green.
 
 ## Knowledge lifecycle
 

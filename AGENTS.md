@@ -1,8 +1,8 @@
 # AMAKURU: Master Build Prompt for Cursor
 
-**Project name:** Amakuru, the verified answer platform for universities
-**Owner:** Alouzious Muhereza, Beta-Tech Labs Co. Limited, with the IndabaX Kabale AI Club
-**First customer:** Kabale University, Uganda
+**Project name:** Amakuru, the verified answer platform for organizations
+**Owner:** Alouzious Muhereza, Beta-Tech Labs Co. Limited
+**Scope:** One organization at a time (university, company, site, or other team); generic configuration
 **Document date:** 12 November 2026
 
 ---
@@ -17,7 +17,7 @@ You are the lead engineer on this product. Read this whole document before writi
 
 Amakuru is a multi-tenant platform that lets a university answer the questions students, parents, guardians and applicants ask again and again: fees, admissions, academic calendar, registration, accommodation, programmes and services. It answers on a website widget and on WhatsApp, in English, Luganda, Runyankole and Swahili, and it answers only from a bank of answers that the university's own offices wrote and signed off. It never invents an answer. When it is not sure, it hands the person to the right office with a name, a phone number or an email.
 
-The product starts as the chatbot for Kabale University and must be built from day one so that it can be sold to other universities, as a hosted service or as an on-premise licence, priced by the features a university needs and the performance it delivers.
+The product is a chatbot for one organization at a time (university, company, NGO, clinic, government office, or any site with an approved answer bank). Keep the codebase generic so another organization can be configured later if needed, as a hosted service or on-premise licence, priced by features and performance.
 
 Understand the competition so that the product wins on purpose. The established higher-education chatbot vendors, such as Ocelot and Ivy, are built for American institutions, are priced in the range of fifteen thousand dollars per feature per year according to public listings, are centred on integrations with American student information systems and American compliance rules, and are not designed for WhatsApp-first communication or for African languages. Amakuru wins by being trustworthy (every answer is approved, dated and traceable), local (WhatsApp, Luganda, Runyankole, Swahili, Ugandan data-protection practice), affordable (it runs on one small server for many universities) and measurable (every release is scored against a test set before it ships). A buyer at a large university or a technology company should be able to open the admin dashboard, ask the bot a hard question, click "why this answer", and see the complete reasoning. That moment is what sells the product.
 
@@ -65,7 +65,7 @@ These choices come from research done on 12 November 2026. Before you add any de
 | Reranker | `BAAI/bge-reranker-v2-m3` on the top 20 candidates | Large accuracy gain for a small latency cost |
 | Language model | Any OpenAI-compatible endpoint behind an `LLMGateway`. Default: Groq with `openai/gpt-oss-120b` for answers and `openai/gpt-oss-20b` for cheap tasks; automatic fallback to a second provider; self-hosted vLLM or Ollama for sovereign deployments | Groq lists these at very low per-token prices and high speed; the gateway removes vendor lock-in |
 | Local languages | `TranslationProvider` interface with Sunbird AI (Luganda, Runyankole, Acholi, Ateso, Lugbara, Swahili) and the owner's own Fasiri as implementations | Sunbird publishes translation and language-detection endpoints for these languages |
-| Admin dashboard | Next.js (App Router), TypeScript in strict mode, Tailwind CSS, shadcn/ui, TanStack Query | Fast to build, accessible components, strong typing end to end |
+| Admin dashboard | Vite + React (JSX), Tailwind CSS, TanStack Query, React Router | Fast to build, accessible components, plain JSX (no TypeScript in the UI) |
 | Chat widget | Preact with Shadow DOM, delivered as one script tag, under 35 KB gzipped | Must load instantly on slow networks and never clash with the host page's styles |
 | Evaluation | pytest with DeepEval as the continuous-integration gate; Ragas for exploratory analysis | DeepEval behaves like unit tests and can fail a build |
 | Observability | structlog, OpenTelemetry, Prometheus metrics, optional Sentry and Langfuse; plus the platform's own query trace table | Tracing is a product feature here, not just an operations tool |
@@ -128,7 +128,7 @@ Every table except platform-level ones carries `tenant_id` and has Row Level Sec
 | `plans`, `entitlements` | What each plan allows |
 | `audit_log` | Append-only record of every sensitive action; no update or delete permission for the application role |
 
-The import format must accept the dataset columns that the Kabale AI Club defined in its working guide: `question_raw`, `asker_type`, `language`, `channel`, `category`, `subcategory`, `frequency`, `season`, `official_answer`, `source_document`, `owner_office`, `last_verified`, `valid_until`, `escalate_to_human`, `collector`, `date_collected`. Rows without an `official_answer` go to a "needs an answer" queue for the owning office, and never into the live bank.
+The import format must accept these dataset columns: `question_raw`, `asker_type`, `language`, `channel`, `category`, `subcategory`, `frequency`, `season`, `official_answer`, `source_document`, `owner_office`, `last_verified`, `valid_until`, `escalate_to_human`, `collector`, `date_collected`. Rows without an `official_answer` go to a "needs an answer" queue for the owning office, and never into the live bank.
 
 ---
 
@@ -240,16 +240,16 @@ amakuru/
   .cursorignore              (node_modules, build output, models, .env, storage)
   docker-compose.yml
   Makefile                   (setup, dev, doctor, test, eval, lint, migrate, seed)
-  apps/api/                  (FastAPI modular monolith and worker)
-  apps/admin/                (Next.js dashboard)
-  apps/widget/               (Preact widget)
+  backend/                   (FastAPI modular monolith and worker)
+  frontend/                  (Vite React dashboard, JSX)
+  frontend/widget/           (Preact widget, JSX)
   packages/api-client/       (TypeScript client generated from OpenAPI)
   eval/                      (golden sets, metrics, reports)
   docs/                      (architecture, adr/, runbooks/, compliance/, api/)
   infra/                     (Caddyfile, backup scripts, optional Kubernetes manifests)
 ```
 
-Standards: type hints everywhere and strict TypeScript; Ruff and a type checker in continuous integration; tests alongside code with high coverage on the pipeline, governance and isolation modules; conventional commit messages; a short architecture decision record for every significant choice; no dead code; no unexplained TODO; typed errors; no hard-coded user-facing strings; the API contract is the OpenAPI document and the TypeScript client is generated from it, never hand-written.
+Standards: type hints everywhere on the API; React dashboard and widget in JSX (not TypeScript); Ruff and a type checker on the API in continuous integration; tests alongside code with high coverage on the pipeline, governance and isolation modules; conventional commit messages; a short architecture decision record for every significant choice; no dead code; no unexplained TODO; typed errors; no hard-coded user-facing strings; the API contract is the OpenAPI document and the TypeScript client is generated from it, never hand-written.
 
 ---
 
@@ -257,7 +257,7 @@ Standards: type hints everywhere and strict TypeScript; Ruff and a type checker 
 
 `.env.example` is the single source of truth for configuration. Create a typed `Settings` class with pydantic-settings that validates every value at startup and prints plain, specific messages when something is missing or malformed. Build `make doctor`, which checks each required value, tests the database, Redis, language model and optional services, and tells the owner exactly what to fix. Build `make setup`, which creates the environment, installs dependencies, starts the services in Docker, runs migrations, downloads the models into `MODEL_CACHE_DIR`, and loads demo data when `SEED_DEMO_DATA=true`. If you ever need a new setting, add it to `.env.example` with a comment in the same change. Never ask the owner to paste secrets into the chat, never hard-code a secret, and keep tenant-level credentials in the database, not in the environment.
 
-Demo data must be plainly labelled as demonstration content. Never invent real fees, dates or contacts for Kabale University or any other institution.
+Demo data must be plainly labelled as demonstration content. Never invent real fees, dates or contacts for any real institution.
 
 ---
 

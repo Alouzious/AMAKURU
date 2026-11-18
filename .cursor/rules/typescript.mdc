@@ -1,11 +1,12 @@
 ---
-description: TypeScript / Next.js standards for Amakuru admin
-globs: apps/admin/**/*.{ts,tsx}
+description: Frontend JSX standards for Amakuru admin and widget
+globs: frontend/**/*.{js,jsx}
 ---
 
-# TypeScript standards
+# Frontend standards (JSX)
 
-- Strict mode; no `any` without a documented reason
+- Dashboard and widget use plain JavaScript/JSX. Do not add TypeScript (`.ts`/`.tsx`) under `frontend/`
 - User-visible strings come from message catalogues, never hard-coded
-- Prefer TanStack Query for server state
-- Generate API types from OpenAPI; do not hand-write the client contract
+- Prefer TanStack Query for server state in the dashboard
+- Generate the API client from OpenAPI in `packages/api-client`; do not hand-write the client contract
+- Use React Router for dashboard navigation; keep the widget as a Preact Shadow DOM bundle

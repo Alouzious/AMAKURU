@@ -29,7 +29,7 @@ jobs:
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s
-          --health-timeout 3s
+          --health-timeout 5s
           --health-retries 10
     env:
       APP_NAME: Amakuru
@@ -52,7 +52,7 @@ jobs:
       REQUIRE_2FA_FOR_APPROVERS: "false"
     defaults:
       run:
-        working-directory: apps/api
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
@@ -65,7 +65,7 @@ jobs:
       - name: Init DB roles
         run: |
           PGPASSWORD=change-me psql -h localhost -U amakuru -d amakuru -f ../../infra/postgres/init.sql
-        working-directory: apps/api
+        working-directory: backend
       - name: Migrate
         run: uv run --python 3.12 alembic upgrade head
       - name: Lint
@@ -76,18 +76,22 @@ jobs:
       - name: Test
         run: uv run --python 3.12 pytest -q
 
-  admin:
+  frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/admin
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: apps/admin/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
       - run: npm ci || npm install
-      - run: npm run lint
-      - run: npx tsc --noEmit
+      - run: npm run build
+      - name: Build widget
+        working-directory: frontend/widget
+        run: |
+          npm ci || npm install
+          npm run build
