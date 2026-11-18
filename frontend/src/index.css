@@ -3,10 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --ink: #1c1917;
-  --paper: #f7f4ef;
-  --accent: #0f4c5c;
-  --muted: #6b655c;
+  --ink: #0b1220;
+  --paper: #f4f6f8;
+  --panel: #ffffff;
+  --line: rgba(11, 18, 32, 0.1);
+  --accent: #0b6e4f;
+  --accent-soft: rgba(11, 110, 79, 0.1);
+  --muted: #5b6573;
+  --danger: #b42318;
+  --font-body: "DM Sans", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
 html,
@@ -16,14 +22,20 @@ body {
 
 body {
   color: var(--ink);
-  background:
-    radial-gradient(ellipse at top left, rgba(15, 76, 92, 0.07), transparent 42%),
-    linear-gradient(180deg, #fbf9f5 0%, var(--paper) 100%);
-  font-family: var(--font-body), "IBM Plex Sans", "Segoe UI", sans-serif;
+  background: var(--paper);
+  font-family: var(--font-body);
+  font-feature-settings: "ss01" on, "kern" on;
+  -webkit-font-smoothing: antialiased;
 }
 
 .font-display {
-  font-family: var(--font-display), Fraunces, Georgia, serif;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
 }
 
 .text-accent {
@@ -38,11 +50,52 @@ body {
   --tw-ring-color: var(--accent);
 }
 
-:root {
-  --font-body: "IBM Plex Sans", "Segoe UI", sans-serif;
-  --font-display: Fraunces, Georgia, serif;
+.ui-input {
+  @apply w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none transition;
+  border-color: var(--line);
 }
 
-body {
-  font-family: var(--font-body);
+.ui-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.ui-label {
+  @apply block text-sm font-medium;
+  color: var(--ink);
+}
+
+.ui-help {
+  @apply mt-1 block text-xs;
+  color: var(--muted);
+}
+
+.ui-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.ui-btn {
+  @apply inline-flex items-center justify-center rounded-lg px-3.5 py-2 text-sm font-semibold transition disabled:opacity-50;
+}
+
+.ui-btn-primary {
+  @apply ui-btn text-white;
+  background: var(--accent);
+}
+
+.ui-btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.ui-btn-ghost {
+  @apply ui-btn;
+  border: 1px solid var(--line);
+  background: transparent;
+}
+
+.ui-btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }

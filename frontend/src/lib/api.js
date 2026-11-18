@@ -17,7 +17,19 @@ async function api(path, init = {}, csrf) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new Error(body?.message || `Request failed (${res.status})`);
+    const detail = body?.detail;
+    let detailMsg = null;
+    if (typeof detail === "string") {
+      detailMsg = detail;
+    } else if (Array.isArray(detail)) {
+      detailMsg = detail
+        .map((d) => {
+          const loc = Array.isArray(d.loc) ? d.loc.filter((x) => x !== "body").join(".") : "";
+          return loc ? `${loc}: ${d.msg}` : d.msg;
+        })
+        .join("; ");
+    }
+    throw new Error(detailMsg || body?.message || `Request failed (${res.status})`);
   }
   if (res.status === 204) return undefined;
   return res.json();

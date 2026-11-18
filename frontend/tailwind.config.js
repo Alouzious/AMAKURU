@@ -4,8 +4,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ["IBM Plex Sans", "Segoe UI", "sans-serif"],
-        display: ["Fraunces", "Georgia", "serif"],
+        body: ["DM Sans", "Segoe UI", "sans-serif"],
+        display: ["DM Sans", "Segoe UI", "sans-serif"],
+        mono: ["IBM Plex Mono", "ui-monospace", "monospace"],
       },
       colors: {
         ink: "var(--ink)",
