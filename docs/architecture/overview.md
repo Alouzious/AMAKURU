@@ -2,6 +2,8 @@
 
 Amakuru is a verified FAQ assistant for organizations (universities, companies, sites, and other teams): one FastAPI API, one worker, one Vite React (JSX) admin app, and one Preact (JSX) widget bundle. Configure one organization at a time.
 
+**User flows and more diagrams:** [flows.md](flows.md)
+
 ## System context
 
 Who talks to what in production (or on a single VPS with Docker Compose).
@@ -71,7 +73,7 @@ flowchart TB
 | Module | Scope |
 |--------|--------|
 | `identity` | Users, sessions, memberships, CSRF, TOTP |
-| `tenancy` | Universities (tenants), branding |
+| `tenancy` | Organizations (tenants), branding |
 | `knowledge` | Offices, answer entries/versions, import, connectors, expiry |
 | `retrieval` | Embeddings, hybrid search, rerank, decision policy, traces |
 | `generation` | LLM gateway, compose, number firewall, scrubber, translation |
