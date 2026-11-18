@@ -79,7 +79,17 @@ def upgrade() -> None:
     op.create_index("ix_search_events_tenant_id", "search_events", ["tenant_id"])
     op.create_index("ix_search_events_count", "search_events", ["tenant_id", "count"])
     _rls("search_events")
-    op.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON search_events TO amakuru_app")
+    op.execute(
+        """
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'amakuru_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON search_events TO amakuru_app;
+          END IF;
+        END
+        $$;
+        """
+    )
 
 
 def downgrade() -> None:

@@ -4,5 +4,15 @@
 {"question": "how do i register in the demo", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "registration", "tags": ["paraphrase"]}
 {"question": "How do I apply in this demo?", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "admissions", "tags": ["exact"]}
 {"question": "demo application steps please", "language": "en", "expected_decision": "compose", "expected_entry_key": "admissions", "tags": ["paraphrase"]}
+{"question": "How much are the demo tuition fees?", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "fees", "tags": ["exact"]}
+{"question": "what are the fees", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "fees", "tags": ["paraphrase"]}
+{"question": "When is the demo fee payment deadline?", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "fee-deadline", "tags": ["exact"]}
+{"question": "What is the demo academic calendar?", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "calendar", "tags": ["exact"]}
+{"question": "when do lectures start", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "calendar", "tags": ["paraphrase"]}
+{"question": "How do I get demo campus accommodation?", "language": "en", "expected_decision": "compose", "expected_entry_key": "accommodation", "tags": ["exact"]}
+{"question": "What are the demo library hours?", "language": "en", "expected_decision": "compose", "expected_entry_key": "library", "tags": ["exact"]}
+{"question": "How do I get a demo student ID card?", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "id-card", "tags": ["exact"]}
+{"question": "How do I request a demo academic transcript?", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "transcript", "tags": ["exact"]}
+{"question": "Who do I contact if the demo bot cannot answer?", "language": "en", "expected_decision": "verbatim", "expected_entry_key": "handoff-contact", "tags": ["exact"]}
 {"question": "What is the nuclear launch code for the university?", "language": "en", "expected_decision": "handoff", "expected_entry_key": null, "tags": ["oos"]}
 {"question": "hello", "language": "en", "expected_decision": "greeting", "expected_entry_key": null, "tags": ["greeting"]}

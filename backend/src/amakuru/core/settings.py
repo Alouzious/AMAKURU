@@ -150,6 +150,8 @@ class Settings(BaseSettings):
                 "database_url",
                 f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}",
             )
+        else:
+            object.__setattr__(self, "database_url", _normalize_asyncpg_url(self.database_url))
         return self
 
     @property
@@ -167,6 +169,36 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{self.database_app_user}:{self.database_app_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+
+
+def _normalize_asyncpg_url(url: str) -> str:
+    """Accept Neon/libpq URLs and reshape them for SQLAlchemy asyncpg."""
+    normalized = url.strip()
+    if normalized.startswith("postgres://"):
+        normalized = "postgresql+asyncpg://" + normalized[len("postgres://") :]
+    elif normalized.startswith("postgresql://"):
+        normalized = "postgresql+asyncpg://" + normalized[len("postgresql://") :]
+    elif not normalized.startswith("postgresql+asyncpg://"):
+        return normalized
+
+    if "?" not in normalized:
+        return normalized
+    base, query = normalized.split("?", 1)
+    params: dict[str, str] = {}
+    for part in query.split("&"):
+        if not part or "=" not in part:
+            continue
+        key, value = part.split("=", 1)
+        params[key] = value
+    # asyncpg rejects sslmode / channel_binding query args from Neon paste URLs.
+    sslmode = params.pop("sslmode", None)
+    params.pop("channel_binding", None)
+    if sslmode in {"require", "verify-ca", "verify-full", "prefer"} and "ssl" not in params:
+        params["ssl"] = "require" if sslmode != "prefer" else "prefer"
+    if not params:
+        return base
+    rebuilt = "&".join(f"{k}={v}" for k, v in params.items())
+    return f"{base}?{rebuilt}"
 
 
 @lru_cache

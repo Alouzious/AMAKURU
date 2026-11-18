@@ -146,7 +146,15 @@ def upgrade() -> None:
         _rls(table)
 
     op.execute(
-        "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE plans, usage_events, api_keys TO amakuru_app"
+        """
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'amakuru_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE plans, usage_events, api_keys TO amakuru_app;
+          END IF;
+        END
+        $$;
+        """
     )
 
     # Seed plan catalogue (source of truth also in Python catalog module).

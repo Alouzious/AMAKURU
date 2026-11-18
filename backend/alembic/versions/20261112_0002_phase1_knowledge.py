@@ -321,7 +321,15 @@ def upgrade() -> None:
 
     grant_tables = ", ".join(TENANT_TABLES)
     op.execute(
-        f"GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE {grant_tables} TO amakuru_app"
+        f"""
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'amakuru_app') THEN
+            GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE {grant_tables} TO amakuru_app;
+          END IF;
+        END
+        $$;
+        """
     )
 
 

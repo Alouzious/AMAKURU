@@ -166,7 +166,7 @@ async def ensure_demo_tenant(session: AsyncSession, admin: User) -> Tenant | Non
     await _ensure_membership(session, tenant_id=tenant.id, user_id=admin.id, role=ROLE_TENANT_ADMIN)
 
     offices: dict[str, Office] = {}
-    for name in ("Registrar", "Admissions", "Finance"):
+    for name in ("Registrar", "Admissions", "Finance", "Student Services", "Accommodation"):
         existing = await session.execute(
             select(Office).where(
                 Office.tenant_id == tenant.id, Office.name == name, Office.deleted_at.is_(None)
@@ -180,7 +180,7 @@ async def ensure_demo_tenant(session: AsyncSession, admin: User) -> Tenant | Non
                 name=name,
                 contact_person=f"Demo {name} Contact",
                 phone="+000-000-0000",
-                email=f"{name.lower()}@demo.example",
+                email=f"{name.lower().replace(' ', '.')}@demo.example",
                 opening_hours="Mon–Fri 09:00–16:00 (demonstration)",
             )
             session.add(office)
@@ -221,25 +221,126 @@ async def ensure_demo_tenant(session: AsyncSession, admin: User) -> Tenant | Non
             registrar,
             True,
             "DEMONSTRATION ONLY: This is a sample answer for Demo University. "
-            "It is not real institutional information.",
+            "It is not real institutional information. Ask about admissions, fees, "
+            "registration, calendar, accommodation, or student services.",
             "What is this demo chatbot for?",
-            ["whats this demo bot about"],
+            ["whats this demo bot about", "who is this bot", "what can you help with"],
         ),
         (
             "registration",
             registrar,
             True,
-            "DEMONSTRATION ONLY: Registration guidance is fictional for this sample dataset.",
+            "DEMONSTRATION ONLY: Registration for continuing students in this sample "
+            "opens on the student portal under Academic → Registration. Use your "
+            "demo student number. Contact Registrar at registrar@demo.example or "
+            "+000-000-0000 if the portal shows an error.",
             "Where do I find demonstration registration info?",
-            ["how do i register in the demo"],
+            ["how do i register in the demo", "registration dates demo", "how to register"],
         ),
         (
             "admissions",
             offices["Admissions"],
             False,
-            "DEMONSTRATION ONLY: Application steps shown here are not real.",
+            "DEMONSTRATION ONLY: To apply in this sample, create an account on the "
+            "demo admissions portal, upload O-level and A-level results (or equivalent), "
+            "pay the demonstration application fee of UGX 50,000, and submit before the "
+            "sample deadline of 31 August. Email admissions@demo.example for help.",
             "How do I apply in this demo?",
-            ["demo application steps please"],
+            ["demo application steps please", "how to apply", "application process"],
+        ),
+        (
+            "fees",
+            offices["Finance"],
+            True,
+            "DEMONSTRATION ONLY: Sample undergraduate tuition is listed as UGX 1,200,000 "
+            "per semester for arts programmes and UGX 1,800,000 per semester for science "
+            "programmes. Pay via the demo bank account 0000000000 (Demo Bank) or the "
+            "student portal. Finance office: finance@demo.example, +000-000-0000.",
+            "How much are the demo tuition fees?",
+            ["what are the fees", "tuition cost demo", "how much do i pay"],
+        ),
+        (
+            "fee-deadline",
+            offices["Finance"],
+            True,
+            "DEMONSTRATION ONLY: In this sample dataset, tuition for the demonstration "
+            "intake is due by 15 September. Late payment in the demo attracts a fictional "
+            "penalty of UGX 50,000. Confirm with Finance at finance@demo.example.",
+            "When is the demo fee payment deadline?",
+            ["fee deadline", "when must I pay fees", "last day to pay tuition"],
+        ),
+        (
+            "calendar",
+            registrar,
+            True,
+            "DEMONSTRATION ONLY: Sample academic calendar — Orientation 1 September, "
+            "lectures begin 8 September, mid-semester break 20–24 October, examinations "
+            "start 1 December. These dates are fictional demonstration values only.",
+            "What is the demo academic calendar?",
+            ["when do lectures start", "exam dates demo", "semester dates"],
+        ),
+        (
+            "accommodation",
+            offices["Accommodation"],
+            False,
+            "DEMONSTRATION ONLY: On-campus halls in this sample open applications on "
+            "1 July. Sample room rate is UGX 400,000 per semester. Apply via the "
+            "housing portal or email accommodation@demo.example. Off-campus listings "
+            "are not verified by this demo bot.",
+            "How do I get demo campus accommodation?",
+            ["hostel application", "where can I stay", "halls of residence"],
+        ),
+        (
+            "library",
+            offices["Student Services"],
+            False,
+            "DEMONSTRATION ONLY: The demo library is open Mon–Fri 08:00–21:00 and "
+            "Sat 09:00–17:00. Bring your student ID. Lost-card replacement in this "
+            "sample costs UGX 10,000 at Student Services.",
+            "What are the demo library hours?",
+            ["library opening times", "when is the library open", "library card"],
+        ),
+        (
+            "id-card",
+            offices["Student Services"],
+            True,
+            "DEMONSTRATION ONLY: Collect your sample student ID from Student Services "
+            "after registration clearance. Bring a passport photo and proof of fee "
+            "payment. Office hours Mon–Fri 09:00–16:00. Email student.services@demo.example.",
+            "How do I get a demo student ID card?",
+            ["student ID", "identity card collection", "where is student services"],
+        ),
+        (
+            "transcript",
+            registrar,
+            True,
+            "DEMONSTRATION ONLY: Request an official transcript from the Registrar via "
+            "the student portal → Documents → Transcript. Sample processing time is "
+            "5 working days. Fee in this demo: UGX 20,000. Contact registrar@demo.example.",
+            "How do I request a demo academic transcript?",
+            ["transcript request", "how to get my results transcript", "official transcript"],
+        ),
+        (
+            "whatsapp-help",
+            offices["Student Services"],
+            False,
+            "DEMONSTRATION ONLY: This sample also answers on WhatsApp when a tenant "
+            "connects a Meta number in Channels. Prefer the web widget when possible; "
+            "WhatsApp messages may be metered. For human help use the office contacts "
+            "shown on hand-off.",
+            "Can I ask questions on WhatsApp in the demo?",
+            ["whatsapp support", "message on whatsapp", "chat on whatsapp"],
+        ),
+        (
+            "handoff-contact",
+            registrar,
+            True,
+            "DEMONSTRATION ONLY: If the bot is unsure, it hands you to the owning office. "
+            "Registrar: registrar@demo.example / +000-000-0000. Admissions: "
+            "admissions@demo.example. Finance: finance@demo.example. These contacts "
+            "are fictional demonstration values.",
+            "Who do I contact if the demo bot cannot answer?",
+            ["talk to a person", "human help", "office contact"],
         ),
     ]
 

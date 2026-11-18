@@ -24,25 +24,36 @@ def upgrade() -> None:
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
     op.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto")
 
+    # Optional RLS app role — skipped on hosted Postgres (e.g. Neon) without CREATEROLE.
     op.execute(
         """
         DO $$
         BEGIN
           IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'amakuru_app') THEN
-            CREATE ROLE amakuru_app LOGIN PASSWORD 'change-me-app';
+            BEGIN
+              CREATE ROLE amakuru_app LOGIN PASSWORD 'change-me-app';
+            EXCEPTION
+              WHEN insufficient_privilege THEN
+                RAISE NOTICE 'amakuru_app role not created (insufficient privilege); USE_APP_ROLE=false';
+              WHEN OTHERS THEN
+                RAISE NOTICE 'amakuru_app role not created: %', SQLERRM;
+            END;
           END IF;
-        END
-        $$;
-        """
-    )
-    op.execute("ALTER ROLE amakuru_app NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE")
-    # Allow the migration/owner role to SET ROLE for isolation tests and ops.
-    op.execute(
-        """
-        DO $$
-        BEGIN
-          IF EXISTS (SELECT FROM pg_roles WHERE rolname = current_user) THEN
-            EXECUTE format('GRANT amakuru_app TO %I', current_user);
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'amakuru_app') THEN
+            BEGIN
+              ALTER ROLE amakuru_app NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE;
+            EXCEPTION
+              WHEN insufficient_privilege THEN
+                RAISE NOTICE 'skipping ALTER ROLE amakuru_app';
+              WHEN OTHERS THEN
+                RAISE NOTICE 'skipping ALTER ROLE amakuru_app: %', SQLERRM;
+            END;
+            BEGIN
+              EXECUTE format('GRANT amakuru_app TO %I', current_user);
+            EXCEPTION
+              WHEN OTHERS THEN
+                RAISE NOTICE 'skipping GRANT amakuru_app TO current_user: %', SQLERRM;
+            END;
           END IF;
         END
         $$;
@@ -204,13 +215,21 @@ def upgrade() -> None:
         """
     )
 
-    # Grants for application role.
-    op.execute("GRANT USAGE ON SCHEMA public TO amakuru_app")
+    # Grants for application role (no-op when role was not created).
     op.execute(
-        "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE tenants, users, memberships, sessions TO amakuru_app"
+        """
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'amakuru_app') THEN
+            GRANT USAGE ON SCHEMA public TO amakuru_app;
+            GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE tenants, users, memberships, sessions TO amakuru_app;
+            GRANT SELECT, INSERT ON TABLE audit_log TO amakuru_app;
+            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO amakuru_app;
+          END IF;
+        END
+        $$;
+        """
     )
-    op.execute("GRANT SELECT, INSERT ON TABLE audit_log TO amakuru_app")
-    op.execute("GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO amakuru_app")
 
 
 def downgrade() -> None:
