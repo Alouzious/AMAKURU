@@ -1,80 +1,65 @@
 # Amakuru
 
-**Verified FAQ assistant for organizations** — universities, companies, NGOs, clinics, government offices, and any website that needs trustworthy answers.
+**Verified FAQ assistant for organizations** — campuses, companies, NGOs, clinics, government offices, and any website that needs trustworthy answers.
 
-Staff approve answers. The bot answers from that bank only. It does not invent facts. When it is unsure, it hands the person to the right team with contact details.
+Staff approve answers. The bot answers only from that bank. It does not invent facts. When unsure, it hands the visitor to the right office.
 
-One organization at a time. Same product works for a campus, a company site, or any team with an approved knowledge base.
-
----
-
-## What you get
-
-| Surface | What it does |
-|---------|----------------|
-| **Chat widget** | One script tag on any website. Floating popup. Mobile-friendly. |
-| **WhatsApp** | Optional Cloud API channel |
-| **Admin dashboard** | Answer bank, review, connectors, live searches, gaps, conversations, evaluation, team, usage |
-| **REST API** | FastAPI `/api/v1` with OpenAPI at `/docs` |
-| **Worker** | Expiry reminders, scheduled connector sync, hot-search promotion |
-
-### Trust rules
-
-- Only **approved, published** answers are served
-- Fees, dates, phones, emails and links must match the source text (number firewall)
-- Every reply can show **why this answer** (trace)
-- Imported or crawled content lands as **drafts** until someone approves
-
-### How a question is answered
-
-Between the visitor and your stored answers sits **retrieval** (embeddings + keyword search + ranking). A language model may **rephrase** only when allowed; it cannot add new facts.
-
-```mermaid
-flowchart TD
-  A[Visitor asks] --> B[Scrub and detect language]
-  B --> C[Search approved answer bank]
-  C --> D{Decision}
-  D -->|strong| E[Approved text as written]
-  D -->|good| F[Rephrase from sources only]
-  F --> G[Number firewall]
-  G --> H[Reply]
-  E --> H
-  D -->|unclear| I[Clarify or hand off]
-  H --> J[Search event plus trace]
-  I --> J
-```
-
-**Full set of diagrams** (visitor ask, staff publish, connectors, embed, onboarding, isolation):  
-→ **[docs/architecture/flows.md](docs/architecture/flows.md)**
-
-Also: [architecture overview](docs/architecture/overview.md) · [data model ERDs](docs/architecture/data-model.md)
+You host Amakuru. Each organization gets its own answer bank and its own embed snippet.
 
 ---
 
-## Live knowledge (no endless CSV)
+## Who uses what
 
-Connect your existing systems so staff do not type every Q&A by hand.
+| Person | What they do |
+|--------|----------------|
+| **You (Amakuru operator)** | Run the API + dashboard. Create organizations. Send each org their embed snippet. |
+| **Org admin / staff** | Add or approve answers in the dashboard (or you do it for them). |
+| **Website visitors** | Open the chat popup on the org’s site and ask questions. |
 
-| Connector | Purpose |
-|-----------|---------|
-| **SQL database** | Pull from Postgres / MySQL / SQLite FAQ tables |
-| **REST / JSON** | Pull from their FAQ API |
-| **Website crawl** | Propose Q&A from public pages |
-| **Spreadsheet** | One-off CSV / Excel import |
-
-Dashboard: **Connectors** → add → **Sync now**.  
-The background worker re-syncs active connectors on an interval.
-
-**Live searches** records every question people ask. Hot unanswered ones can be promoted into the needs-answer queue.
+**Normal integrate path:** create org → get snippet → they paste it on their site → answers live in Amakuru.  
+Their production database URL is **not** required for the chat to work, and must **never** go in the public snippet.
 
 ---
 
-## Embed the chat on any website
+## How to use Amakuru (operator guide)
 
-1. Deploy the API so it is public (example: `https://api.yourdomain.com`).
-2. Build and serve the widget: `frontend/widget/dist/amakuru-widget.js` (mounted at `/widget/`).
-3. In the dashboard, open **Channels**, copy the widget key, and allow the site origin.
-4. The site owner pastes:
+### 1. Sign in
+
+Open the admin dashboard (local: http://localhost:3000).
+
+After seed, demo login:
+
+| | |
+|--|--|
+| Email | `admin@example.com` |
+| Password | `ChangeMeNow123!` |
+
+You land straight on the organization dashboard.
+
+### 2. Create an organization
+
+1. Open the **organization switcher** (top of the sidebar).
+2. Click **New organization** (modal stays on the same screen).
+3. Fill:
+   - **Name** and **slug** (slug: at least 2 characters, e.g. `beta`)
+   - Admin email / password for their staff login
+   - Optional website origin (e.g. `https://their-site.com`)
+   - **Answer source** (pick one):
+     - Amakuru sample answers (quick demo)
+     - Paste Q&A they shared with you
+     - Read-only FAQ database URL (encrypted; optional)
+     - FAQ API URL (optional)
+     - Public website drafts (optional)
+     - Empty (add answers later)
+4. Click **Create organization**.
+5. **Copy the embed snippet** (and widget key) in the modal — the full key is shown once.
+6. Click **Done** to stay, or **Switch to this org** if you want that org’s dashboard.
+
+Secrets such as a FAQ DB URL are stored encrypted on the server. They are **not** placed in the website script.
+
+### 3. Give them the snippet
+
+Send only this kind of HTML (with **their** live API URL and **their** widget key):
 
 ```html
 <script>
@@ -87,71 +72,114 @@ The background worker re-syncs active connectors on an interval.
 <script src="https://api.yourdomain.com/widget/amakuru-widget.js" defer></script>
 ```
 
-You host the backend. Their site only embeds the popup.
+They paste it before `</body>` on their site (or via their CMS).
 
-Local demo (API running): http://localhost:8000/widget/demo
+Local testing:
 
----
+- API + demo page: http://localhost:8000/widget/demo  
+- Demo widget key (after seed): `ak_live_demo_university_key_change_me`
 
-## Repository layout
+### 4. Fill the answer bank
+
+Answers must exist in Amakuru for that org before the bot can help much.
+
+| Method | When to use |
+|--------|-------------|
+| **Answers** screen | Type Q&A in the dashboard |
+| Paste at create time | They already sent you a list |
+| CSV / spreadsheet import | One-off bulk load |
+| **Connectors** (under *More for this org*) | Ongoing pull from FAQ DB / API / website into **drafts** |
+
+Connectors are optional. Imported rows become **drafts** until someone reviews and publishes.
+
+### 5. Day-to-day dashboard
+
+Sidebar essentials:
+
+| Item | Use |
+|------|-----|
+| **Overview** | Activity snapshot |
+| **Answers** | Create and manage the answer bank |
+| **Embed** | Copy snippet / see widget settings |
+
+Under **More for this org** (same organization only):
+
+| Item | Use |
+|------|-----|
+| Connectors | Import from DB / API / site |
+| Searches | What people asked |
+| Conversations | Threads + why this answer |
+| Review / Gaps / Expiring | Quality and governance |
+| Team / Settings / Usage / Audit | Access, branding, metering |
+
+Switch organizations anytime from the sidebar org switcher.
+
+### 6. How a visitor question is answered
 
 ```text
-AMAKURU/
-  backend/           FastAPI API + worker (Python 3.12)
-  frontend/          Admin dashboard (Vite + React JSX)
-  frontend/widget/   Embeddable chat popup (Preact JSX)
-  docs/              Architecture, compliance templates
-  eval/              Golden sets / evaluation fixtures
-  infra/             Postgres init, backups, Caddy
-  packages/          Generated API client (optional)
+Their website  →  Your Amakuru API  →  That org’s published answers in Amakuru DB
 ```
 
+Not from inventing facts. Not from their live site database (unless you imported via Connectors into Amakuru first).
+
+```mermaid
+flowchart TD
+  A[Visitor asks on their site] --> B[Widget calls your API with widget key]
+  B --> C[Find organization for that key]
+  C --> D[Search published answers]
+  D --> E{Decision}
+  E -->|strong match| F[Approved text]
+  E -->|weaker match| G[Rephrase from sources only]
+  G --> H[Number firewall]
+  H --> I[Reply]
+  F --> I
+  E -->|unsure| J[Hand off to office]
+```
+
+More diagrams: [docs/architecture/flows.md](docs/architecture/flows.md)
+
 ---
 
-## Stack
+## Security rules for integrators
 
-| Layer | Choice |
-|-------|--------|
-| API | Python 3.12, FastAPI, SQLAlchemy 2 async, Alembic, `requirements.txt` |
-| DB | PostgreSQL 16 + pgvector + Row Level Security |
-| Cache / jobs | Redis 7; worker process for sync and expiry |
-| Admin | Vite, React (JSX), Tailwind, TanStack Query, React Router |
-| Widget | Preact (JSX), Shadow DOM, single script tag |
-| Deploy | Docker Compose (Postgres + Redis); API/dashboard as you prefer |
-
-More detail: [flows](docs/architecture/flows.md) · [overview](docs/architecture/overview.md) · [data model](docs/architecture/data-model.md)
+- **Public snippet** = API URL + widget key only  
+- **Never** put database passwords or DSNs in `index.html` or GitHub  
+- Prefer CSV or a read-only FAQ API over giving Amakuru a full production DB login  
+- If you use a SQL connector, use a **read-only** FAQ user  
+- Store operator secrets in `.env` (never commit `.env`)
 
 ---
 
-## Quick start
+## Quick start (developers)
 
-**Prerequisites:** Docker Compose, Node 20+, Python 3.12+.
+**Prerequisites:** Docker Compose (or a Postgres URL such as Neon), Node 20+, Python 3.12+.
 
 ### 1. Environment
 
 ```bash
 cp .env.example .env
-# Set SECRET_KEY and ENCRYPTION_KEY (see comments in .env.example)
+# Set SECRET_KEY, ENCRYPTION_KEY, and DATABASE_URL if using hosted Postgres
 ```
 
-Never commit `.env`.
+Neon / libpq URLs are accepted; the API normalizes them for asyncpg (`ssl=require`).
 
 ### 2. Database
 
 ```bash
 docker compose up -d postgres redis
+# or point DATABASE_URL at Neon and skip local Postgres
 ```
 
-### 3. Backend (FastAPI)
+### 3. Backend
 
 ```bash
 cd backend
 python3 -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 pip install -e .
 alembic upgrade head
-python -m amakuru.scripts.seed     # optional demo data
+python -m amakuru.scripts.seed
 uvicorn amakuru.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -159,7 +187,7 @@ uvicorn amakuru.main:app --host 0.0.0.0 --port 8000 --reload
 - Docs: http://localhost:8000/docs  
 - Chat demo: http://localhost:8000/widget/demo  
 
-Optional worker (connectors + search promotion + expiry):
+Optional worker (connectors, search promotion, expiry):
 
 ```bash
 cd backend && source .venv/bin/activate
@@ -181,53 +209,54 @@ npm run dev
 cd frontend/widget
 npm install
 npm run build
-# serves via API at /widget/amakuru-widget.js
+# served by the API at /widget/amakuru-widget.js
 ```
 
-### Demo login (after seed)
-
-| | |
-|--|--|
-| Email | `admin@example.com` |
-| Password | `ChangeMeNow123!` |
-
-Demo content is labelled **demonstration only**. Do not invent real fees, dates or contacts for a real organization.
-
-### Makefile helpers (optional)
-
-If `.tools/bin/uv` is available: `make setup`, `make doctor`, `make dev`, `make test`, `make widget`, `make migrate`, `make seed`.
+Demo content is labelled **demonstration only**. Do not invent real fees or contacts for a real institution.
 
 ---
 
-## Dashboard map
+## Repository layout
 
-| Screen | Use |
-|--------|-----|
-| Overview | Activity and mix |
-| Answer bank | Create / manage answers |
-| Review queue | Approve and publish |
-| Gaps | Questions we could not answer |
-| Live searches | What people ask, by frequency |
-| Connectors | Link DB / API / website |
-| Conversations | Threads + why-this-answer |
-| Channels | Widget key, embed, WhatsApp |
-| Team / Settings / Usage | Access, branding, metering |
+```text
+AMAKURU/
+  backend/           FastAPI API + worker
+  frontend/          Admin dashboard (Vite + React JSX)
+  frontend/widget/   Embeddable chat popup (Preact JSX)
+  docs/              Architecture, compliance templates
+  eval/              Golden sets / evaluation fixtures
+  infra/             Postgres init, backups, Caddy
+```
+
+---
+
+## Stack
+
+| Layer | Choice |
+|-------|--------|
+| API | Python 3.12, FastAPI, SQLAlchemy 2 async, Alembic |
+| DB | PostgreSQL + pgvector (+ RLS; app role optional on hosted Neon) |
+| Cache / jobs | Redis; worker for sync and expiry |
+| Admin | Vite, React (JSX), Tailwind, TanStack Query |
+| Widget | Preact (JSX), Shadow DOM, one script tag |
 
 ---
 
 ## Configuration
 
-[`.env.example`](.env.example) is the configuration contract. Important extras:
+[`.env.example`](.env.example) is the configuration contract.
 
 | Setting | Meaning |
 |---------|---------|
-| `ALLOW_PRIVATE_DB_CONNECTORS` | Allow SQL connectors to campus LAN hosts |
-| `CONNECTOR_SYNC_INTERVAL_SECONDS` | How often the worker re-syncs connectors |
-| `SEARCH_PROMOTE_MIN_COUNT` | Frequency before hot searches become needs-answer |
-| `ALLOW_EXTERNAL_AI_CALLS` | Set `false` for self-hosted / sovereign LLM mode |
+| `DATABASE_URL` | Postgres URL (local or Neon) |
+| `ALLOW_PRIVATE_DB_CONNECTORS` | Allow SQL connectors to private/LAN hosts |
+| `CONNECTOR_SYNC_INTERVAL_SECONDS` | Worker re-sync interval |
+| `SEARCH_PROMOTE_MIN_COUNT` | Promote hot unanswered searches |
+| `ALLOW_EXTERNAL_AI_CALLS` | `false` for self-hosted / sovereign LLM mode |
 | `VITE_API_BASE_URL` | Dashboard → API base (default `http://localhost:8000`) |
+| `API_BASE_URL` | Written into new embed snippets at org create time |
 
-Organization channel secrets (WhatsApp tokens, connector DSNs) are encrypted in the database, not left in `.env`.
+Organization secrets (WhatsApp tokens, connector DSNs) are encrypted in the database.
 
 ---
 
