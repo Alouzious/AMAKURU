@@ -1,7 +1,7 @@
 # Data Protection Impact Assessment (template)
 
 **Product:** Amakuru  
-**Owner organisations:** Beta-Tech Labs Co. Limited / [University name]  
+**Owner organisations:** [Product operator] / [Organization name]  
 **Status:** Template - confirm with Ugandan counsel before production go-live  
 
 ## 1. Processing description
@@ -43,5 +43,5 @@ If `ALLOW_EXTERNAL_AI_CALLS=true`, scrubbed question text and retrieved approved
 | Role | Name | Date |
 |------|------|------|
 | University DPO / privacy lead | | |
-| Beta-Tech Labs | | |
+| Product operator | | |
 | Legal counsel (Uganda) | | |

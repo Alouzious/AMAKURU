@@ -1,6 +1,6 @@
 # Compliance templates
 
-These documents are **templates**. Beta-Tech Labs and each university must confirm registration duties under Uganda’s Data Protection and Privacy Act, 2019 (and 2021 regulations) with a qualified Ugandan lawyer. They are not legal advice.
+These documents are **templates**. The product operator and each organization must confirm registration duties under Uganda’s Data Protection and Privacy Act, 2019 (and 2021 regulations) with a qualified Ugandan lawyer. They are not legal advice.
 
 | Document | Purpose |
 |----------|---------|

@@ -233,4 +233,4 @@ Organization channel secrets (WhatsApp tokens, connector DSNs) are encrypted in 
 
 ## Licence
 
-Project work for **Beta-Tech Labs Co. Limited**.
+Proprietary. See the project owner for licensing terms.

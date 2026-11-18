@@ -1,7 +1,7 @@
 # Record of processing activities (template)
 
 **Controller (typical):** University tenant  
-**Processor (typical):** Beta-Tech Labs Co. Limited (hosted mode)  
+**Processor (typical):** [Hosting / product operator] (hosted mode)  
 **Law:** Data Protection and Privacy Act, 2019 (Uganda) - confirm registration status annually  
 
 | # | Activity | Purpose | Data | Lawful basis (draft) | Retention | Recipients |

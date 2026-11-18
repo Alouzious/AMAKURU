@@ -1,7 +1,7 @@
 # AMAKURU: Master Build Prompt for Cursor
 
 **Project name:** Amakuru, the verified answer platform for organizations
-**Owner:** Alouzious Muhereza, Beta-Tech Labs Co. Limited
+**Owner:** Project owner
 **Scope:** One organization at a time (university, company, site, or other team); generic configuration
 **Document date:** 12 November 2026
 
@@ -182,7 +182,7 @@ The unanswered queue is a product feature: cluster similar unanswered questions,
 
 **Privacy by design.** The product collects no personal data deliberately. The widget tells users not to type personal details. The scrubber removes what slips through before it is stored or sent to any model. Raw conversation text is anonymised after the retention period in `TRANSCRIPT_RETENTION_DAYS`. Provide tools for a data subject's access and deletion requests, and a consent notice in the widget.
 
-**Uganda's law.** The Data Protection and Privacy Act, 2019 and its 2021 regulations apply. Public legal commentary from 2025 reports that the Personal Data Protection Office requires data controllers, processors and collectors to register and renew annually, that a controller must be able to show a compliance framework for sending personal data across borders, and that the office has acted against large foreign platforms on these points. Because Amakuru may send questions to an AI provider outside Uganda, include in `docs/compliance/` a data-protection impact assessment template, a processing register template, a description of every external service and what it receives, and a "sovereign mode" (`ALLOW_EXTERNAL_AI_CALLS=false`) in which only self-hosted models and in-country services are used. State plainly in these documents that they are templates and that the university and Beta-Tech Labs must confirm their registration duties with a qualified Ugandan lawyer.
+**Uganda's law.** The Data Protection and Privacy Act, 2019 and its 2021 regulations apply. Public legal commentary from 2025 reports that the Personal Data Protection Office requires data controllers, processors and collectors to register and renew annually, that a controller must be able to show a compliance framework for sending personal data across borders, and that the office has acted against large foreign platforms on these points. Because Amakuru may send questions to an AI provider outside Uganda, include in `docs/compliance/` a data-protection impact assessment template, a processing register template, a description of every external service and what it receives, and a "sovereign mode" (`ALLOW_EXTERNAL_AI_CALLS=false`) in which only self-hosted models and in-country services are used. State plainly in these documents that they are templates and that the organization must confirm their registration duties with a qualified Ugandan lawyer.
 
 ---
 
